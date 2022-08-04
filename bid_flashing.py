@@ -6,8 +6,8 @@ from xlrd import open_workbook
 
 bid= int(input("Insira o numero da BID ou o nome do UDC "))
 
-datafile = "/home/daniele-goncalves/bid/Inventario.xlsx"
-sheet = open_workbook(datafile).sheet_by_name("Inventário")
+datafile = "Inventario.xls"
+sheet = open_workbook(datafile).sheet_by_name("Inventario")
 
 # Procurar a bid na sheet
 
@@ -26,44 +26,24 @@ for row_index in range(1,sheet.nrows):
         print("Device model: "+device_model)
         print("Device room: "+room_name)
 
-
-def check_model():
-    if (device_model == "FBP"):
-        return 1
-    else:
-        return -1
-    
 def find_dsp_file():
     if (dsp_path):
-        path = '/home/daniele-goncalves/udc/udc-dsp-parameters-db/'+room_name+'/fbp/'+dsp_path
+        path = 'udc-dsp-parameters-db/'+room_name+'/fbp/'+dsp_path
         file = open(path)
         line = file.readlines()
-    
-        return 1
-    else:
-        return -1
-
+        return path
 
 def find_ps_file():
     if(ps_path):
-        path = '/home/daniele-goncalves/udc/udc-ps-parameters-db/'+room_name+'/fbp/'+ps_path
+        path = 'udc-ps-parameters-db/'+room_name+'/fbp/'+ps_path
         file = open(path)
         line = file.readlines()
+        return path
 
-        return 1
-    else:
-        return -1
-
-modelo = check_model()   
-
-dsp_result = -1
-ps_result = -1
-
-if(modelo == - 1):  
+if(device_model != "FBP"):
     print("Modelo selecionado incorreto: " + device_model)
 
-else:
-    find_ps_file()
-    drs =  pydrs.pydrs.EthDRS('10.0.6.59',5000)
+elif(device_model == "FBP"):
+    print(find_ps_file())
+    #drs =  pydrs.pydrs.EthDRS('10.0.6.59',5000)
     #drs.set_slave_add(4))
-   
