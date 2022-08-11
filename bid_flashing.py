@@ -12,42 +12,6 @@ IP_DRS = "10.0.6.59"
 PORT_DRS = 5000
 
 
-def clear_bid():
-    for param in params_01_element:
-        drs.set_param(param, 0, 0)
-
-    for param in params_04_element:
-        for n in range(4):
-            drs.set_param(param, n, 0)
-
-    for param in params_32_element:
-        for n in range(32):
-            drs.set_param(param, n, 0)
-
-    for param in params_64_element:
-        for n in range(64):
-            drs.set_param(param, n, 0)
-
-    # ARM - Defaults
-    drs.set_param(2, 0, 1)
-    drs.set_param(4, 0, 6000000)
-    drs.set_param(5, 0, 1)
-    drs.set_param(5, 1, 30)
-    drs.set_param(5, 2, 30)
-    drs.set_param(5, 3, 30)
-    drs.set_param(6, 0, 1)
-    drs.set_param(10, 0, 1)
-
-
-
-    # \/ MISSING CLEARING DSP & DSP DEFAULTS \/
-
-
-
-    time.sleep(0.5)
-    drs.save_param_bank(type_memory=1)
-    time.sleep(0.5)
-
 
 def read_spreadsheet(datafile = "Inventario.xls", bid = None, pstype = None):
     sheet = open_workbook(datafile).sheet_by_name("Inventario")
@@ -109,28 +73,39 @@ if (__name__ == '__main__'):
             confirmation = input("Flash BID {} for UDC {}?\n( Y ) to continue or  ( N ) to skip UDC/BID\n Enter your choice (N): ".format(psinfo[ps][4], ps))
             if confirmation == "y" or confirmation == "Y":
                 
-                drs.unlock_udc(0xCAFE)
-                time.sleep(1)
-
                 print("Clearing BID...")
-                clear_bid()
+                drs.clear_bid(password=0xCAFE)
+
 
                 print("Saving {} into BID...".format(psinfo[ps][1]))
-                drs.set_param_bank(ps_param_path)
+                bid_ps_bank = drs.set_param_bank(ps_param_path)
                 time.sleep(0.5)
                 drs.save_param_bank(type_memory=1)
                 time.sleep(0.5)
 
                 if (psinfo[ps][0].lower() != "fbp-dclink"):
                     print("Saving {} into BID...".format(psinfo[ps][2]))
-                    drs.set_dsp_modules_bank(dsp_param_path)
+                    bid_dsp_bank = drs.set_dsp_modules_bank(dsp_param_path)
                     time.sleep(0.5)
                     drs.save_dsp_modules_eeprom(type_memory=1)
                     time.sleep(0.5)
+
     #
     #            LEITURAS
-    #            value = drs.get_param_bank()
-    #            value = drs.get_dsp_modules_bank()
+                drs.load_param_bank(type_memory=1)
+                read_ps_bank = drs.get_param_bank(print_modules=False)
+              
+                for param_name in bid_ps_bank.keys():
+                    for i in range(len(bid_ps_bank[param_name])):
+                        if(bid_ps_bank[param_name][i][1] != read_ps_bank[param_name][i][1]):
+                            print("{}[{}] = {} and {} : params differs.\nRetry flashing this BID!".format(param_name, i, bid_ps_bank[param_name][i][0], read_ps_bank[param_name][i][0]))
+
+
+                if (psinfo[ps][0].lower() != "fbp-dclink"):
+                    drs.load_dsp_modules_eeprom(type_memory=1)
+                    read_dsp_bank = drs.get_dsp_modules_bank(print_modules=False)
+
+
                 #drs.reset_udc()
             else:
                 print("Not updating.\n\n\n")
