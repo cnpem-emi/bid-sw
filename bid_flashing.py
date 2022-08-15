@@ -1,12 +1,9 @@
+#!/usr/bin/python3
 import argparse
 import pydrs
 import time
 from xlrd import open_workbook
 
-params_01_element = [1, 2, 3, 4, 6, 7, 10, 11, 13, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 33, 34, 35, 36, 37]
-params_04_element = [5, 8, 9, 12, 14, 15, 16, 17, 28, 29, 30, 31, 32, 38, 39, 40, 41, 42, 43, 50, 51]
-params_32_element = [46, 47, 48, 49]
-params_64_element = [0, 44, 45]
 
 IP_DRS = "10.0.6.59"
 PORT_DRS = 5000
