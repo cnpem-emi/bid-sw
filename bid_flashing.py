@@ -22,6 +22,9 @@ def read_spreadsheet(datafile = "Inventario.xls", bid = None, pstype = None):
         dsp_file = sheet.cell(row_index,keys.index("dsp_parameters")).value
         bid_code = int(sheet.cell(row_index,keys.index("# BID")).value)
 
+        if "fbp" not in udc_model.lower():
+            udc_model = udc_model[:3]
+
         if ("IA-" in udc_name):
             room_name =  udc_name[:5]
         else:
