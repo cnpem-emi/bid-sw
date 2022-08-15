@@ -45,7 +45,10 @@ if (__name__ == '__main__'):
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('-ps', '--power-supply', dest='ps_type', choices=['fbp', 'fbp-dclink', 'fap'])
     parser.add_argument('-bid', '--bid-id', dest='bid_id', type=int)
+    parser.add_argument('-memory', '--type-memory', dest='type_mem', type=int, choices=[1, 2], default=1)
     args = parser.parse_args()
+
+    memoryType = {1: "BID", 2:"on-board"}
 
     drs = pydrs.EthDRS(IP_DRS, PORT_DRS)
     drs.slave_addr = 1
@@ -56,11 +59,9 @@ if (__name__ == '__main__'):
         exit()
 
     elif(args.ps_type is not None):
-        print("PSType definido!")
         psinfo = read_spreadsheet(pstype=args.ps_type)
 
     elif(args.bid_id is not None):
-        print("BID definida!")
         psinfo = read_spreadsheet(bid=args.bid_id)
         
         
@@ -73,26 +74,26 @@ if (__name__ == '__main__'):
             confirmation = input("Flash BID {} for UDC {}?\n( Y ) to continue or  ( N ) to skip UDC/BID\n Enter your choice (N): ".format(psinfo[ps][4], ps))
             if confirmation == "y" or confirmation == "Y":
                 
-                print("Clearing BID...")
-                drs.clear_bid(password=0xCAFE)
+                #print("Clearing BID...")
+                #drs.clear_bid(password=0xCAFE)
+                drs.unlock_udc(0xCAFE)
 
 
-                print("Saving {} into BID...".format(psinfo[ps][1]))
+                print("Saving {} into {} memory...".format(psinfo[ps][1], memoryType[args.type_mem]))
                 bid_ps_bank = drs.set_param_bank(ps_param_path)
                 time.sleep(0.5)
-                drs.save_param_bank(type_memory=1)
+                drs.save_param_bank(type_memory=args.type_mem)
                 time.sleep(0.5)
 
                 if (psinfo[ps][0].lower() != "fbp-dclink"):
-                    print("Saving {} into BID...".format(psinfo[ps][2]))
+                    print("Saving {} into {} memory...".format(psinfo[ps][2], memoryType[args.type_mem]))
                     bid_dsp_bank = drs.set_dsp_modules_bank(dsp_param_path)
                     time.sleep(0.5)
-                    drs.save_dsp_modules_eeprom(type_memory=1)
+                    drs.save_dsp_modules_eeprom(type_memory=args.type_mem)
                     time.sleep(0.5)
 
-    #
     #            LEITURAS
-                drs.load_param_bank(type_memory=1)
+                drs.load_param_bank(type_memory=args.type_mem)
                 read_ps_bank = drs.get_param_bank(print_modules=False)
               
                 for param_name in bid_ps_bank.keys():
@@ -100,12 +101,12 @@ if (__name__ == '__main__'):
                         if(bid_ps_bank[param_name][i][1] != read_ps_bank[param_name][i][1]):
                             print("{}[{}] = {} and {} : params differs.\nRetry flashing this BID!".format(param_name, i, bid_ps_bank[param_name][i][0], read_ps_bank[param_name][i][0]))
 
-
                 if (psinfo[ps][0].lower() != "fbp-dclink"):
-                    drs.load_dsp_modules_eeprom(type_memory=1)
+                    drs.load_dsp_modules_eeprom(type_memory=args.type_mem)
                     read_dsp_bank = drs.get_dsp_modules_bank(print_modules=False)
+                    for param_name in bid_dsp_bank.keys():
+                        if(bid_dsp_bank[param_name] != read_dsp_bank[param_name]):
+                            print("{}\n{}\n{}\nparams differs.\nRetry flashing this BID!".format(param_name, bid_dsp_bank[param_name]['coeffs'][0], read_dsp_bank[param_name]['coeffs'][0]))
 
-
-                #drs.reset_udc()
             else:
                 print("Not updating.\n\n\n")
