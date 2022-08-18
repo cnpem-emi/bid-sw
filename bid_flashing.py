@@ -106,7 +106,7 @@ if (__name__ == '__main__'):
 
     memoryType = {1: "BID", 2:"on-board"}
 
-    a = drs = pydrs.EthDRS(IP_DRS, PORT_DRS)
+    drs = pydrs.EthDRS(IP_DRS, PORT_DRS)
     drs.slave_addr = 1
 
 
@@ -155,12 +155,20 @@ if (__name__ == '__main__'):
                 # ------------------------------
                 # RESET UDC FOR PARAMETER LOADING
                 # ------------------------------
-                drs.reset_udc()
-
+                #drs.reset_udc()
+                #while(True):
+                #    try:
+                #        drs.get_ps_name()
+                #        drs.unlock_udc(0xCAFE)
+                #        break
+                #    except:
+                #        print("Waiting for UDC startup...")
+                #        time.sleep(2)
 
                 # ------------------------------
                 # READINGS - PS PARAMETERS
                 # ------------------------------
+                
                 print("\n\n")
                 print("Loading {} into memory, reading PS parameters and comparing them to {} file".format(
                     memoryType[args.type_mem],
