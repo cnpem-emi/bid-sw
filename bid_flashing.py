@@ -106,8 +106,7 @@ if (__name__ == '__main__'):
 
     memoryType = {1: "BID", 2:"on-board"}
 
-    drs = pydrs.EthDRS(IP_DRS, PORT_DRS)
-    drs.slave_addr = 1
+
 
 
 
@@ -121,6 +120,21 @@ if (__name__ == '__main__'):
     elif(args.bid_id is not None):
         psinfo = read_spreadsheet(bid=args.bid_id)
         
+    
+    drs = pydrs.EthDRS(IP_DRS, PORT_DRS)
+    
+    for addr in range(31)[1:]:
+        drs.slave_addr = addr
+        try:
+            drs.read_udc_version()
+            print("Address {} found!".format(addr))
+            break
+        except:
+            print("checking addrs")
+
+
+    print("UDC ARM VERSION:  ", drs.read_udc_arm_version())
+    print("UDC DSP VERSION:  ", drs.read_udc_c28_version())
         
     # psinfo[udc_name] = [udc_model, ps_file, dsp_file, room_name, bid_code]
     if psinfo:
@@ -133,6 +147,10 @@ if (__name__ == '__main__'):
                 
                 #print("Clearing BID...")
                 #drs.clear_bid(password=0xCAFE)
+                # ------------------------------
+                # UNLOCK UDC
+                # ------------------------------
+                print("Unlocking UDC...")
                 drs.unlock_udc(0xCAFE)
 
 
