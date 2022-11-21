@@ -7,20 +7,19 @@ from xlrd import open_workbook
 
 IP_DRS = "10.0.6.78"
 PORT_DRS = 5000
-FLOAT_MAX_ERROR = 1e-5 # Usually is 1.1920929e-08
-
+FLOAT_MAX_ERROR = 1e-3 # Usually is 1.1920929e-08
 
 
 def check_param_bank(csv_file, max_error, memory=1):
     drs.load_param_bank(type_memory=args.type_mem)
-    read_ps_bank = drs.get_param_bank(print_modules=False)
+    read_ps_bank = drs.get_param_bank()
     csv_ps_bank = drs.read_csv_param_bank(ps_param_path)
 
     error_values = {}
               
     for param_name in csv_ps_bank.keys():
         if param_name == "PS_Name":
-            if(csv_ps_bank[param_name] != read_ps_bank[param_name]):
+            if(csv_ps_bank[param_name] != read_ps_bank[param_name][0]):
                 print("{} = {} and {} : param differs!".format(
                     param_name, 
                     csv_ps_bank[param_name], 
@@ -43,7 +42,7 @@ def check_param_bank(csv_file, max_error, memory=1):
 
 def check_dsp_module_bank(csv_file, max_error, memory=1):
     drs.load_dsp_modules_eeprom(type_memory=memory)
-    read_dsp_bank = drs.get_dsp_modules_bank(print_modules=False)
+    read_dsp_bank = drs.get_dsp_modules_bank()
     csv_dsp_bank = drs.read_csv_dsp_modules_bank(csv_file)
 
     error_values = {}
@@ -109,7 +108,6 @@ if (__name__ == '__main__'):
 
 
 
-
     if((args.bid_id is not None) and (args.ps_type is not None)):
         print("Selecionar apenas a BID ou tipo de fonte!")
         exit()
@@ -122,15 +120,15 @@ if (__name__ == '__main__'):
         
     
     drs = pydrs.EthDRS(IP_DRS, PORT_DRS)
-    
+
     for addr in range(31)[1:]:
         drs.slave_addr = addr
         try:
-            drs.read_udc_version()
+            drs.get_ps_name()
             print("Address {} found!".format(addr))
             break
         except:
-            print("checking addrs")
+            pass
 
 
     print("UDC ARM VERSION:  ", drs.read_udc_arm_version())
@@ -145,8 +143,8 @@ if (__name__ == '__main__'):
             confirmation = input("Flash BID {} for UDC {}? (y/N): ".format(psinfo[ps][4], ps))
             if confirmation == "y" or confirmation == "Y":
                 
-                #print("Clearing BID...")
-                #drs.clear_bid(password=0xCAFE)
+                print("Clearing BID...")
+                drs.clear_bid(password=0xCAFE)
                 # ------------------------------
                 # UNLOCK UDC
                 # ------------------------------
@@ -173,28 +171,37 @@ if (__name__ == '__main__'):
                 # ------------------------------
                 # RESET UDC FOR PARAMETER LOADING
                 # ------------------------------
-                #drs.reset_udc()
-                #while(True):
-                #    try:
-                #        drs.get_ps_name()
-                #        drs.unlock_udc(0xCAFE)
-                #        break
-                #    except:
-                #        print("Waiting for UDC startup...")
-                #        time.sleep(2)
+                print("Resetting UDC and wait for startup...")
+                drs.reset_udc()
+                time.sleep(5)
+                
+                drs.slave_addr = int(bid_ps_bank['RS485_Address'][0][0])
+
+                while(True):
+                    try:
+                        drs.get_ps_name()
+                        print("Address after reboot {} found!".format(drs.slave_addr))
+                        break
+                    except:
+                        print("Waiting addr {}".format(drs.slave_addr))
+
+       
+
+
+                drs.unlock_udc(0xCAFE)
 
                 # ------------------------------
                 # READINGS - PS PARAMETERS
                 # ------------------------------
                 
-                print("\n\n")
+                print("\n")
                 print("Loading {} into memory, reading PS parameters and comparing them to {} file".format(
                     memoryType[args.type_mem],
                     psinfo[ps][1]
                 ))
                 if(check_param_bank(ps_param_path, FLOAT_MAX_ERROR, memory=args.type_mem)):
                     print("OOOOOOOOOPS !")
-
+                
                 # ------------------------------
                 # READINGS - DSP PARAMETERS
                 # ------------------------------
@@ -208,6 +215,6 @@ if (__name__ == '__main__'):
 
 
             else:
-                print("Not updating.\n\n\n")
+                print("Not updating.\n\n")
 
             

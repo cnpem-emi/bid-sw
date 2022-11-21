@@ -1,0 +1,8 @@
+[submodule "udc-ps-parameters-db"]
+	path = udc-ps-parameters-db
+	url = https://github.com/cnpem-sei/udc-ps-parameters-db
+	branch = master
+[submodule "udc-dsp-parameters-db"]
+	path = udc-dsp-parameters-db
+	url = https://github.com/cnpem-sei/udc-dsp-parameters-db
+	branch = master
