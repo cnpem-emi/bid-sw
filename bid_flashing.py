@@ -5,9 +5,11 @@ import time
 from xlrd import open_workbook
 
 
-IP_DRS = "10.0.6.78"
+IP_DRS = "10.0.6.59"
 PORT_DRS = 5000
-FLOAT_MAX_ERROR = 1e-3 # Usually is 1.1920929e-08
+
+FLOAT_MAX_ERROR = 1e-4 # Usually is 1.1920929e-08
+
 
 
 def check_param_bank(csv_file, max_error, memory=1):
@@ -137,7 +139,7 @@ if (__name__ == '__main__'):
     # psinfo[udc_name] = [udc_model, ps_file, dsp_file, room_name, bid_code]
     if psinfo:
         for ps in psinfo.keys():
-            ps_param_path = 'udc-ps-parameters-db/{}/{}/{}'.format(psinfo[ps][3], psinfo[ps][0].lower(), psinfo[ps][1])
+            ps_param_path = 'udc-ps-parameters-db/{}/{}/{}'.format(psinfo[ps][3], psinfo[ps][0].lower().replace("-","_"), psinfo[ps][1])
             dsp_param_path = 'udc-dsp-parameters-db/{}/{}/{}'.format(psinfo[ps][3], psinfo[ps][0].lower(), psinfo[ps][2])
 
             confirmation = input("Flash BID {} for UDC {}? (y/N): ".format(psinfo[ps][4], ps))
@@ -212,7 +214,7 @@ if (__name__ == '__main__'):
                 ))
                     if(check_dsp_module_bank(dsp_param_path, FLOAT_MAX_ERROR, memory=args.type_mem)):
                         print("OOOOOOOOOPS !")
-
+                print(drs.get_ps_name())
 
             else:
                 print("Not updating.\n\n")
