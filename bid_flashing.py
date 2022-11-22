@@ -203,6 +203,8 @@ if (__name__ == '__main__'):
                 ))
                 if(check_param_bank(ps_param_path, FLOAT_MAX_ERROR, memory=args.type_mem)):
                     print("OOOOOOOOOPS !")
+                else:
+                    print("PS PARAMETERS: DONE!")
                 
                 # ------------------------------
                 # READINGS - DSP PARAMETERS
@@ -214,7 +216,8 @@ if (__name__ == '__main__'):
                 ))
                     if(check_dsp_module_bank(dsp_param_path, FLOAT_MAX_ERROR, memory=args.type_mem)):
                         print("OOOOOOOOOPS !")
-                print(drs.get_ps_name())
+                    else:
+                        print("DSP PARAMETERS: DONE!")
 
             else:
                 print("Not updating.\n\n")
