@@ -78,22 +78,24 @@ def read_spreadsheet(datafile = "Inventario.xls", bid = None, pstype = None):
         ps_file = sheet.cell(row_index,keys.index("ps_parameters")).value
         dsp_file = sheet.cell(row_index,keys.index("dsp_parameters")).value
         bid_code = int(sheet.cell(row_index,keys.index("# BID")).value)
-
-        if "fbp" not in udc_model.lower():
+        
+        if "fa" in udc_model.lower():
             udc_model = udc_model[:3]
 
         if ("IA-" in udc_name):
             room_name =  udc_name[:5]
+        elif ("Development" in udc_name):
+            room_name = "development"
         else:
             room_name =  udc_name[:2]
 
-        if(bid):
+        if(bid is not None):
             if((sheet.cell(row_index,keys.index("# BID")).value == bid)):
                 items[udc_name] = [udc_model, ps_file, dsp_file, room_name, bid_code]
         elif(pstype):
             if((sheet.cell(row_index,keys.index("Modelo")).value == pstype.upper())):
                 items[udc_name] = [udc_model, ps_file, dsp_file, room_name, bid_code]
-        
+
     return items
 
 
@@ -107,9 +109,6 @@ if (__name__ == '__main__'):
 
     memoryType = {1: "BID", 2:"on-board"}
 
-
-
-
     if((args.bid_id is not None) and (args.ps_type is not None)):
         print("Selecionar apenas a BID ou tipo de fonte!")
         exit()
@@ -119,8 +118,7 @@ if (__name__ == '__main__'):
 
     elif(args.bid_id is not None):
         psinfo = read_spreadsheet(bid=args.bid_id)
-        
-    
+
     drs = pydrs.EthDRS(IP_DRS, PORT_DRS)
 
     for addr in range(31)[1:]:
@@ -131,7 +129,6 @@ if (__name__ == '__main__'):
             break
         except:
             pass
-
 
     print("UDC ARM VERSION:  ", drs.read_udc_arm_version())
     print("UDC DSP VERSION:  ", drs.read_udc_c28_version())
