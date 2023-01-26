@@ -86,6 +86,8 @@ def read_spreadsheet(datafile = "Inventario.xls", bid = None, pstype = None):
             room_name =  udc_name[:5]
         elif ("Development" in udc_name):
             room_name = "development"
+        elif ("EMA" in udc_name):
+            room_name = "BL/EMA"    
         else:
             room_name =  udc_name[:2]
 
